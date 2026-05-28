@@ -1,30 +1,44 @@
+import * as dotenv from "dotenv";
+dotenv.config(); // 🔥 MUST BE FIRST
+
 import express from "express";
 import cors from "cors";
 
-import eventRoutes from "./routes/event.routes";
-import authRoutes from "./routes/auth.routes";
-import transactionRoutes from "./routes/transaction.routes";
-import "./cron/pointExpiration.cron";
-import userRoutes from "./routes/user.routes";
+import eventRoutes from "./routes/eventRoutes";
+import transactionRoutes from "./routes/transactionRoutes";
+
+// CRON
+import "./utils/cron";
+
+// 🔥 DEBUG (remove later)
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 const app = express();
 
-app.use(cors(
-{origin: "http://localhost:5173"}
-));
+// MIDDLEWARES
+app.use(cors());
 app.use(express.json());
 
-// ✅ EVENT ROUTES
+// ROUTES
 app.use("/events", eventRoutes);
+app.use("/transactions", transactionRoutes);
 
-// ✅ AUTH ROUTES
-app.use("/auth", authRoutes);
+// HEALTH CHECK
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
 
-app.use(
-  "/transactions",
-  transactionRoutes
-);
+// GLOBAL ERROR HANDLER
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("🔥 GLOBAL ERROR:", err);
+  res.status(500).json({
+    message: err.message || "Internal server error",
+  });
+});
 
-app.use("/users", userRoutes);
+// SERVER
+const PORT = process.env.PORT || 5000;
 
-export default app;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

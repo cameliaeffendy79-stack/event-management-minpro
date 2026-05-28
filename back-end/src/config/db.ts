@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool } from "../../node_modules/@types/pg";
 import * as dotenv from "dotenv";
 
 dotenv.config();
